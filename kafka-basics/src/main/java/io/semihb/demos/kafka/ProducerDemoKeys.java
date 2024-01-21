@@ -19,8 +19,8 @@ Sticky Partitioner: for Kafka 2.4 and above
 Sticky Partitioner improves the performance of the producer especially with high throughput.
 */
 
-public class ProducerDemoWithCallback {
-    public static final Logger log = LoggerFactory.getLogger(ProducerDemoWithCallback.class.getSimpleName());
+public class ProducerDemoKeys {
+    public static final Logger log = LoggerFactory.getLogger(ProducerDemoKeys.class.getSimpleName());
 
     public static void main(String[] args) throws InterruptedException {
         log.info("kafka producer on semihb's machine...");
@@ -41,31 +41,25 @@ public class ProducerDemoWithCallback {
         // create the producer
         KafkaProducer<String, String> producer = new KafkaProducer<>(properties);
 
-        for (int j = 0; j < 10; j++) {
-            for (int i = 0; i < 30; i++) {
+        for (int j = 0; j < 2; j++) {
+            for (int i = 0; i < 10; i++) {
+                String topic = "demo_java";
+                String key = "id_" + i;
+                String value = "hello semihb!" + i;
                 // Create producer record
                 ProducerRecord<String, String> producerRecord =
-                        new ProducerRecord<>("demo_java", "launching kafka w/ semihb!" + i);
+                        new ProducerRecord<>(topic,key, value);
                 producer.send(producerRecord, new Callback() {
                     @Override
                     public void onCompletion(RecordMetadata metadata, Exception e) {
                         // executes every time a record successfully sent or an exception is thrown
                         if (e == null) {
-                            log.info("Received new metadata \n" +
-                                    "Topic: " + metadata.topic() +
-                                    " Partition: " + metadata.partition() +
-                                    " Offset: " + metadata.offset() +
-                                    " Timestamp: "+ metadata.timestamp());
+                            log.info("Key: " + key + " | Partition: " + metadata.partition());
                         } else {
                             log.error("Error while producing: ", e);
                         }
                     }
                 });
-            }
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
         }
 
